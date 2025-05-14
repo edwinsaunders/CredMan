@@ -1,0 +1,32 @@
+# Ignore object files
+*.o
+
+# Ignore executable files (common in C projects)
+a.out
+*.exe
+cred_manager  # Add your ELF executable name here
+
+# Ignore temporary files
+*~
+*.swp
+
+# Ignore build directories (if any are created)
+build/
+dist/
+
+# Ignore dependency files
+*.d
+
+*.txt
+
+*.md
+
+!README.md
+
+*.bak
+
+archive/
+
+*.sublime-workspace
+
+*.sublime-project
