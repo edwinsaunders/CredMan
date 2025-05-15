@@ -21,6 +21,12 @@ void query_credentials(Credential *creds, int num_creds) {
     WINDOW *results_win = newwin(max_y - 3, max_x, 3, 0);
     wrefresh(results_win);
 
+    //get height of results window to know how many results to display
+    int results_max_y = getmaxy(results_win);
+
+    // set num of results to display based on size of results window
+    int num_results_to_display = results_max_y - 2;
+
     // Buffers and variables for user interaction
     char input[MAX_INPUT] = "";
     int input_pos = 0;
@@ -34,26 +40,57 @@ void query_credentials(Credential *creds, int num_creds) {
         return;
     }
     int num_matches = 0;
+    int *scores = malloc(num_creds * sizeof(int));
+    int *match_scores = malloc(num_creds * sizeof(int));
 
     while (1) {
         // Find matching credentials based on input
         num_matches = 0;
         for (int i = 0; i < num_creds; i++) {
-            if (input[0] == '\0' || fuzzy_match(input, creds[i].account) > 0) {
-                matches[num_matches++] = i;
+            scores[i] = fuzzy_match(input, creds[i].account);
+            if (input[0] == '\0' || scores[i] > 0) {
+                matches[num_matches] = i;
+                match_scores[num_matches] = scores[i];
+                num_matches++;
             }
         }
 
+        // sort matches by score using bubble sort
+        //scores[N]
+        // scores[matches[N]] goes with creds[N].account
+        // def bubble_sort(arr):
+        //     n = len(arr)
+        //     for i in range(n):
+        //         for j in range(0, n - i - 1):
+        //             if arr[j] > arr[j + 1]:
+        //                 arr[j], arr[j + 1] = arr[j + 1], arr[j]
+        //     return arr
+
+        int n = num_matches;
+        int temp;
+        int temp2;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n-i-1; j++) {
+                if (match_scores[j+1] > match_scores[j]) {
+                    temp = match_scores[j];
+                    temp2 = matches[j];
+                    match_scores[j] = match_scores[j+1];
+                    matches[j] = matches[j+1];
+                    match_scores[j+1] = temp;
+                    matches[j+1] = temp2;
+                }
+            }
+        }
         // Adjust selection and scrolling
         if (selected >= num_matches) selected = num_matches - 1;
         if (selected < 0) selected = 0;
         if (selected < offset) offset = selected;
-        if (selected >= offset + MAX_DISPLAY) offset = selected - MAX_DISPLAY + 1;
+        if (selected >= offset + num_results_to_display) offset = selected - num_results_to_display + 1;
 
-        // Update results window
+        // Display results
         werase(results_win);
         box(results_win, 0, 0);
-        for (int i = offset; i < num_matches && i < offset + MAX_DISPLAY; i++) {
+        for (int i = offset; i < num_matches && i < offset + num_results_to_display; i++) {
             if (i == selected) {
                 wattron(results_win, A_REVERSE);
             }

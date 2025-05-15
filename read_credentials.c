@@ -19,6 +19,16 @@ int read_credentials(const char *filename, Credential *creds, int *num_creds) {
     // Read file line by line
     while (fgets(buffer, MAX_LINE, file)) {
         buffer[strcspn(buffer, "\r\n")] = '\0';
+
+        // loop through buffer, check for whitespace, stop as soon as non-whitespace found
+        // trim buffer if it is all whitespace chars
+        int i = 0;
+        while (isspace(buffer[i]) && i < strlen(buffer)) {
+            i++;            
+        }
+        if (i == strlen(buffer)) {
+            trim(buffer);
+        }
  
         if (strlen(buffer) == 0) {
             empty_lines++;

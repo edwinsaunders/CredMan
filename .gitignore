@@ -4,7 +4,7 @@
 # Ignore executable files (common in C projects)
 a.out
 *.exe
-cred_manager  # Add your ELF executable name here
+cred_manager
 
 # Ignore temporary files
 *~

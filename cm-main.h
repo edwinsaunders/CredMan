@@ -32,7 +32,7 @@
 #define MAX_BLOCKS 100
 #define MAX_LINE 256
 #define MAX_INPUT 256
-#define MAX_DISPLAY 10
+#define MAX_DISPLAY 20
 
 typedef struct {
     char *content;
