@@ -59,8 +59,7 @@ char **string_split(char *string) {
 		stringstart += linelength + 1;
 
 	}
-	lines[numlines + 1] = NULL;
-	//hold position after newline
+	lines[numlines] = NULL;
 	return lines;
 }
 /*

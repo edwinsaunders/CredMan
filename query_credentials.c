@@ -39,6 +39,8 @@ void query_credentials(Credential *creds, int num_creds) {
     // Buffers and variables for user interaction
     char input[MAX_INPUT] = "";
     char **block_lines;
+    char *content_copy;
+    int num_lines = 0;
     int input_pos = 0;
     int selected = 0;
     int offset = 0;
@@ -127,14 +129,26 @@ void query_credentials(Credential *creds, int num_creds) {
         } else if (ch == '\n' && num_matches > 0) {
             werase(results_win);
             box(results_win, 0, 0);
-            
-            block_lines = string_split(creds[matches[selected]].content);
 
+            // original line
+            // mvwprintw(results_win, 1, 1, "Credentials for %s:\n%s",
+            //     creds[matches[selected]].account, creds[matches[selected]].content);
+            
+            // modified code
+            content_copy = strdup(creds[matches[selected]].content);
+            block_lines = string_split(content_copy);
+            num_lines = arr_length(block_lines);
             mvwprintw(results_win, 1, 1, "Credentials for %s:", creds[matches[selected]].account);
-            for(int i = 0; i < arr_length(block_lines); i++) {
-                mvwprintw(results_win, 3 + i, 1, "%s\n", block_lines[i]);                
+            for(int j = 0; j < num_lines; j++) {
+                mvwprintw(results_win, 3 + j, 1, "%s", block_lines[j]);                
             }
-              //        creds[matches[selected]].content);
+            
+            // free memory
+            for(int i = 0; i < num_lines; i++) {
+                free(block_lines[i]);
+            }
+            free(block_lines);
+            free(content_copy);
 
 
 
