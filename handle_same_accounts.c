@@ -3,37 +3,39 @@
 // Prompts the user to choose which entry to keep (first, second, or both)
 // and frees memory for discarded entries. Updates num_creds accordingly.
 void handle_same_accounts(Credential *creds, int *num_creds) {
-    scrollok(stdscr, TRUE);
+
     for (int i = 0; i < *num_creds; i++) {
         if (creds[i].content == NULL) continue;
         for (int j = i + 1; j < *num_creds; j++) {
             if (creds[j].content == NULL) continue;
             if (same_account(creds[i].account, creds[j].account)) {
                 // Display duplicate account entries
-                clear();
-                move(0, 0);
-                printw("\nMultiple entries found for account: %s\n", creds[i].account);
-                printw("\nEntry %d:\n%s\n", i + 1, creds[i].content);
-                printw("Entry %d:\n%s\n", j + 1, creds[j].content);
-                printw("Choose an action:\n");
-                printw("1. Keep first entry\n");
-                printw("2. Keep second entry\n");
-                printw("3. Keep both entries\n");
-                refresh();
+                printf("\nMultiple entries found for account: %s\n", creds[i].account);
+                printf("\nEntry %d:\n%s\n", i + 1, creds[i].content);
+                printf("Entry %d:\n%s\n", j + 1, creds[j].content);
+                printf("Choose an action:\n");
+                printf("1. Keep first entry\n");
+                printf("2. Keep second entry\n");
+                printf("3. Keep both entries\n");
 
                 
-
                 // Read user choice
                 //set keypad mode TRUE to interpret escape seuqnces as ncurses keycodes
                 // (arrow keys are escape sequnces: 27[A (octal 033[A), 27[B, etc)
                 // keypad(stdscr, TRUE);
+                
+
                 int choice;
-                echo();
+            label:
+                // choice = 0;
+                printf("\nEnter choice (1-3): ");
 
-                label:
+                scanf("%d", &choice);
+                while ( getchar() != '\n' )
+                    ;
 
-                printw("\nEnter choice (1-3): ");
-                scanw("%d", &choice);
+                printf("\n%d", choice);
+               
 
                 //printw("%d", choice);
                 //refresh();
@@ -58,7 +60,7 @@ void handle_same_accounts(Credential *creds, int *num_creds) {
                 } else {
                     //error msg and reprint prompt for invalid input
                     // move(cursor_y + 2, 0);
-                    printw("Invalid input.  Please try again.\n");
+                    printf("\nInvalid input.  Please try again.\n");
                     // move(cursor_y, 0);
                     goto label;
                 }
@@ -75,4 +77,5 @@ void handle_same_accounts(Credential *creds, int *num_creds) {
         }
     }
     *num_creds = new_count;
+    printf("DEBUG: Total credentials (after handle_same_accounts): %d\n", *num_creds);
 }

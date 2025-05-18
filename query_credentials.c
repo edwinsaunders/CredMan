@@ -1,4 +1,13 @@
 #include "cm-main.h"
+
+size_t arr_length(char **arr) {
+    size_t length = 0;
+    while (arr[length] != NULL) {
+        length++;
+    }
+    return length;
+}
+
 // Provides an interactive interface to query and display credentials.
 // Uses ncurses to create input and results windows, supports fuzzy search,
 // and allows navigation and selection of credentials.
@@ -6,6 +15,7 @@ void query_credentials(Credential *creds, int num_creds) {
     initscr();
     cbreak();
     noecho();
+    refresh();
     keypad(stdscr, TRUE);
 
     // Get screen dimensions
@@ -19,7 +29,6 @@ void query_credentials(Credential *creds, int num_creds) {
     wrefresh(input_win);
 
     WINDOW *results_win = newwin(max_y - 3, max_x, 3, 0);
-    wrefresh(results_win);
 
     //get height of results window to know how many results to display
     int results_max_y = getmaxy(results_win);
@@ -29,6 +38,7 @@ void query_credentials(Credential *creds, int num_creds) {
 
     // Buffers and variables for user interaction
     char input[MAX_INPUT] = "";
+    char **block_lines;
     int input_pos = 0;
     int selected = 0;
     int offset = 0;
@@ -44,6 +54,8 @@ void query_credentials(Credential *creds, int num_creds) {
     int *match_scores = malloc(num_creds * sizeof(int));
 
     while (1) {
+        box(input_win, 0, 0);
+        mvwprintw(input_win, 1, 1, "Search: ");
         // Find matching credentials based on input
         num_matches = 0;
         for (int i = 0; i < num_creds; i++) {
@@ -109,22 +121,26 @@ void query_credentials(Credential *creds, int num_creds) {
         // Handle user input
         int ch = getch();
 
-        //Debug
-        mvwprintw(input_win, 2, 1, "Key code: %d  ", ch); // Debug key code
-        wrefresh(input_win);
 
         if (ch == 27) {
             break;
         } else if (ch == '\n' && num_matches > 0) {
             werase(results_win);
             box(results_win, 0, 0);
-            mvwprintw(results_win, 1, 1, "Credentials for %s:\n%s\n", creds[matches[selected]].account,
-                      creds[matches[selected]].content);
+            
+            block_lines = string_split(creds[matches[selected]].content);
+
+            mvwprintw(results_win, 1, 1, "Credentials for %s:", creds[matches[selected]].account);
+            for(int i = 0; i < arr_length(block_lines); i++) {
+                mvwprintw(results_win, 3 + i, 1, "%s\n", block_lines[i]);                
+            }
+              //        creds[matches[selected]].content);
+
+
+
             mvwprintw(results_win, max_y - 6, 1, "Press any key to continue...");
             wrefresh(results_win);
-            refresh();
             getch();
-            wrefresh(input_win);
         // key codes needed to be modified KEY_UP, etc. did not work
         // 450 = KEY_UP, 456 = KEY_DOWN, 8 = KEY_BACKSPACE
         } else if (ch == KEY_UP && selected > 0) {
@@ -134,15 +150,21 @@ void query_credentials(Credential *creds, int num_creds) {
         } else if (ch == KEY_BACKSPACE || ch == 127) {
             if (input_pos > 0) {
                 input[--input_pos] = '\0';
+                offset = 0;
+                selected = 0;
             }
         } else if (isprint(ch) && input_pos < MAX_INPUT - 1) {
             input[input_pos++] = ch;
             input[input_pos] = '\0';
+            offset = 0;
+            selected = 0;
         }
     }
 
     // Clean up
     free(matches);
+    free(scores);
+    free(match_scores);
     delwin(input_win);
     delwin(results_win);
     endwin();

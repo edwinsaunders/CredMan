@@ -26,4 +26,5 @@ void remove_duplicates(Credential *creds, int *num_creds) {
         }
     }
     *num_creds = new_count;
+    printf("DEBUG: Total credentials (after remove_duplicates): %d\n", *num_creds);
 }

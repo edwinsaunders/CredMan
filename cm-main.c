@@ -14,24 +14,24 @@ int main(int argc, char *argv[]) {
     int num_creds = 0;
     count_creds(argv[1], &num_creds);
     Credential *creds = malloc(num_creds * sizeof(Credential));
+    if (!creds) {
+        perror("error allocating memory");
+        return 0;
+        
+    }
 
     if (!read_credentials(argv[1], creds, &num_creds)) {
         return 1;
     }
     
-    initscr();
-    cbreak();
-    noecho();
-    
+        
     // Process credentials
     remove_duplicates(creds, &num_creds);
-    printw("Removed exact duplicate credential blocks.\n");
-    refresh();
+    printf("Removed exact duplicate credential blocks.\n");
     sleep_ms(1000);
 
     handle_same_accounts(creds, &num_creds);
-    printw("Processed multiple entries for same accounts.\n");
-    refresh();
+    printf("Processed multiple entries for same accounts.\n");
     sleep_ms(1000);
 
     save_credentials("out.txt", creds, num_creds);

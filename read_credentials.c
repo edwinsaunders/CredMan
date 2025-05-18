@@ -58,6 +58,7 @@ int read_credentials(const char *filename, Credential *creds, int *num_creds) {
     }
 
     fclose(file);
-    printf("DEBUG: Total credentials loaded: %d\n", *num_creds);
+    printf("DEBUG: Total credentials loaded (before handle_same_accounts): %d\n", *num_creds);
+    printf("DEBUG: cred_count in read_credentials): %d\n", cred_count);
     return 1;
 }

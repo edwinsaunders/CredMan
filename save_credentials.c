@@ -16,7 +16,6 @@ void save_credentials(const char *filename, Credential *creds, int num_creds) {
 
     fclose(file);
     // Display save confirmation
-    printw("Credentials saved to %s\n", filename);
-    refresh();
+    printf("Credentials saved to %s\n", filename);
     sleep_ms(1000);
 }
