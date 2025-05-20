@@ -63,9 +63,13 @@ void handle_same_accounts(Credential *creds, int *num_creds) {
                     // and read from stdin to get new names, enter for no change
                     // move on to next j val to find other duplicates accounts for same i val
                     printf("Enter new name for entry %d: %s\nNew name: ", i + 1, creds[i].account);
-                    rename_cred(creds[i].account);
+                    rename_cred(creds[i].content);
+                    //changed content, need to re-extract account
+                    creds[i].account = extract_account(creds[i].content);
                     printf("Enter new name for entry %d: %s\nNew name: ", j + 1, creds[j].account);
-                    rename_cred(creds[j].account);
+                    rename_cred(creds[j].content);
+                    //changed content, need to re-extract account
+                    creds[j].account = extract_account(creds[j].content);
                     continue;
                 } else {
                     //error msg and reprint prompt for invalid input
