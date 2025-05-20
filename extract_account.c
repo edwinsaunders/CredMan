@@ -7,6 +7,6 @@ char *extract_account(const char *block) {
     char *account = strdup(block);
     char *newline = strchr(account, '\n');
     if (newline) *newline = '\0';
-    trim(account);
+    //trim(account);
     return account;
 }

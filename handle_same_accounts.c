@@ -16,7 +16,7 @@ void handle_same_accounts(Credential *creds, int *num_creds) {
                 printf("Choose an action:\n");
                 printf("1. Keep first entry\n");
                 printf("2. Keep second entry\n");
-                printf("3. Keep both entries\n");
+                printf("3. Rename entries\n");
 
                 
                 // Read user choice
@@ -31,10 +31,12 @@ void handle_same_accounts(Credential *creds, int *num_creds) {
                 printf("\nEnter choice (1-3): ");
 
                 scanf("%d", &choice);
+                //flush input buffer so it wont loop due to reading a char from it instead
+                    // of waiting for user input
                 while ( getchar() != '\n' )
                     ;
 
-                printf("\n%d", choice);
+                //printf("\n%d", choice);
                
 
                 //printw("%d", choice);
@@ -47,16 +49,24 @@ void handle_same_accounts(Credential *creds, int *num_creds) {
                     creds[j].content = NULL;
                     creds[j].account = NULL;
                     // no break statement, keep checking on current i value
+                    continue;
                 } else if (choice == 2) {
                     // Keep second entry, discard first
                     free(creds[i].content);
                     free(creds[i].account);
                     creds[i].content = NULL;
                     creds[i].account = NULL;
-                    // break out of j loop to move on to next i value
+                    // break out of j loop to move on to next i val
                     break;
                 } else if (choice == 3) {
-                    break;
+                    // function to rename accounts should take current i and j creds
+                    // and read from stdin to get new names, enter for no change
+                    // move on to next j val to find other duplicates accounts for same i val
+                    printf("Enter new name for entry %d: %s\nNew name: ", i + 1, creds[i].account);
+                    rename_cred(creds[i].account);
+                    printf("Enter new name for entry %d: %s\nNew name: ", j + 1, creds[j].account);
+                    rename_cred(creds[j].account);
+                    continue;
                 } else {
                     //error msg and reprint prompt for invalid input
                     // move(cursor_y + 2, 0);

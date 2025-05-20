@@ -1,5 +1,54 @@
 #include "cm-main.h"
 
+#ifdef _WIN32
+void set_fixed_console_size(int rows, int cols) {
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    COORD size = {cols, rows};
+    SMALL_RECT rect = {0, 0, cols - 1, rows - 1};
+
+    // Set console buffer size
+    SetConsoleScreenBufferSize(hConsole, size);
+
+    // Set window size
+    SetConsoleWindowInfo(hConsole, TRUE, &rect);
+
+    // Disable resizing and maximize button
+    HWND hwnd = GetConsoleWindow();
+    SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_MAXIMIZEBOX & ~WS_SIZEBOX);
+    SetWindowPos(hwnd, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+
+    // Update pdcurses
+    resize_term(rows, cols);
+}
+#endif
+
+WINDOW *input_win, *results_win;
+
+void redraw_ui() {
+
+    endwin();
+    refresh();
+    // Resize and reposition subwindows
+    //wresize(input_win, 3, COLS);             // search bar
+    wresize(results_win, LINES - 3, COLS);       // results window
+    //mvwin(input_win, 0, 0);
+    mvwin(results_win, LINES - 3, 0);          // Move results
+
+    // Redraw input window
+    werase(input_win);
+    box(input_win, 0, 0);
+    // mvwprintw(input_win, 1, 1, "Status: %d rows, %d cols", 4, COLS);
+    wnoutrefresh(input_win);
+
+    // Redraw results window
+    werase(results_win);
+    box(results_win, 0, 0);
+    // mvwprintw(results_win, 1, 1, "Main Window (%d x %d)", LINES - 4, COLS);
+    wnoutrefresh(results_win);
+
+    doupdate();
+}
+
 size_t arr_length(char **arr) {
     size_t length = 0;
     while (arr[length] != NULL) {
@@ -18,17 +67,24 @@ void query_credentials(Credential *creds, int num_creds) {
     refresh();
     keypad(stdscr, TRUE);
 
+#ifdef _WIN32
+    const int FIXED_ROWS = 24;
+    const int FIXED_COLS = 80;
+    set_fixed_console_size(FIXED_ROWS, FIXED_COLS);
+#endif
+
     // Get screen dimensions
-    int max_y, max_x;
-    getmaxyx(stdscr, max_y, max_x);
+    // int max_y, max_x;
+    // getmaxyx(stdscr, max_y, max_x);
 
     // Create input and results windows
-    WINDOW *input_win = newwin(3, max_x, 0, 0);
+    input_win = newwin(3, COLS, 0, 0);
     box(input_win, 0, 0);
     mvwprintw(input_win, 1, 1, "Search: ");
     wrefresh(input_win);
 
-    WINDOW *results_win = newwin(max_y - 3, max_x, 3, 0);
+    results_win = newwin(LINES - 3, COLS, 3, 0);
+    wrefresh(results_win);
 
     //get height of results window to know how many results to display
     int results_max_y = getmaxy(results_win);
@@ -56,8 +112,13 @@ void query_credentials(Credential *creds, int num_creds) {
     int *match_scores = malloc(num_creds * sizeof(int));
 
     while (1) {
+        // setup input win
         box(input_win, 0, 0);
         mvwprintw(input_win, 1, 1, "Search: ");
+
+
+
+
         // Find matching credentials based on input
         num_matches = 0;
         for (int i = 0; i < num_creds; i++) {
@@ -123,6 +184,14 @@ void query_credentials(Credential *creds, int num_creds) {
         // Handle user input
         int ch = getch();
 
+        /*
+        resize handling
+
+        if resize detected, reinit curses with new window size
+        update affected values
+
+        */
+        
 
         if (ch == 27) {
             break;
@@ -152,10 +221,12 @@ void query_credentials(Credential *creds, int num_creds) {
 
 
 
-            mvwprintw(results_win, max_y - 6, 1, "Press any key to continue...");
+            mvwprintw(results_win, LINES - 6, 1, "Press any key to continue...");
             wrefresh(results_win);
+            // wait for key press
             getch();
-        // key codes needed to be modified KEY_UP, etc. did not work
+
+        // key codes needed to be modified for wine - KEY_UP, etc. did not work
         // 450 = KEY_UP, 456 = KEY_DOWN, 8 = KEY_BACKSPACE
         } else if (ch == KEY_UP && selected > 0) {
             selected--;
@@ -172,6 +243,14 @@ void query_credentials(Credential *creds, int num_creds) {
             input[input_pos] = '\0';
             offset = 0;
             selected = 0;
+        } else if (ch == KEY_RESIZE) {
+            redraw_ui(); // Handle resize immediately
+
+            //get new height of results window to know how many results to display
+            results_max_y = getmaxy(results_win);
+
+            // set new num of results to display based on new size of results window
+            num_results_to_display = results_max_y - 2;
         }
     }
 

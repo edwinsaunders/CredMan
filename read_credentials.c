@@ -21,15 +21,23 @@ int read_credentials(const char *filename, Credential *creds, int *num_creds) {
         buffer[strcspn(buffer, "\r\n")] = '\0';
 
         // loop through buffer, check for whitespace, stop as soon as non-whitespace found
-        // trim buffer if it is all whitespace chars
+            // trim buffer if it is all whitespace chars
+            // also check for non-printable chars and replace with empty space
+        int num_spaces = 0;
         int i = 0;
-        while (isspace(buffer[i]) && i < strlen(buffer)) {
-            i++;            
+        while (i < strlen(buffer)) {
+            if (isspace(buffer[i])) {
+                num_spaces++;
+            } else if (!isprint(buffer[i])) {
+                buffer[i] = ' ';
+            }
+
+            i++;
         }
-        if (i == strlen(buffer)) {
-            trim(buffer);
-        }
- 
+
+        // trim leading and trailing whitespace char
+        trim(buffer);
+         
         if (strlen(buffer) == 0) {
             empty_lines++;
             if (empty_lines >= 1 && block_size > 0) {

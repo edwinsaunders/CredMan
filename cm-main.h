@@ -33,6 +33,7 @@
 #define MAX_LINE 1024
 #define MAX_INPUT 256
 // #define MAX_DISPLAY 20
+#define DEFAULT_FILE "out.txt"
 
 typedef struct {
     char *content;
@@ -53,6 +54,7 @@ void save_credentials(const char *filename, Credential *creds, int num_creds);
 void query_credentials(Credential *creds, int num_creds);
 void free_credentials(Credential *creds, int num_creds);
 char **string_split(char *string);
+void rename_cred(char *string);
 
 
 #endif // CM_MAIN_H
