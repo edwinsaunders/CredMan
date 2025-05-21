@@ -3,7 +3,7 @@
 // Parses the file, allocates memory for each block and account name,
 // and stores them in the creds array. Updates num_creds and returns 1 on success, 0 on failure.
 int read_credentials(const char *filename, Credential *creds, int *num_creds) {
-    FILE *file = fopen(filename, "r");
+    FILE *file = fopen(filename, "rb");
     if (!file) {
         perror("Error opening file");
         return 0;
@@ -28,6 +28,9 @@ int read_credentials(const char *filename, Credential *creds, int *num_creds) {
         while (i < strlen(buffer)) {
             if (isspace(buffer[i])) {
                 num_spaces++;
+            // convert non printable quotes and apostrophe to printable single quote
+            } else if (buffer[i] == '\222' || buffer[i] == '\223' || buffer[i] == '\224') {
+                buffer[i] = '\x27';
             } else if (!isprint(buffer[i])) {
                 buffer[i] = ' ';
             }

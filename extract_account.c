@@ -6,7 +6,13 @@
 char *extract_account(const char *block) {
     char *account = strdup(block);
     char *newline = strchr(account, '\n');
-    if (newline) *newline = '\0';
+    
+    // check length of account line, if greater than DISPLAY_WIDTH
+        // terminate at index DISPLAY_WIDTH + 1
+    int first_line_len = strcspn(block, "\r\n");
+    if(first_line_len > DISPLAY_WIDTH) {
+        account[DISPLAY_WIDTH + 1] = '\0';
+    } else if (newline) *newline = '\0';
     //trim(account);
     return account;
 }

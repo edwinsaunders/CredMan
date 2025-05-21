@@ -26,10 +26,12 @@ void rename_cred(char *string) {
 
 	if (new_str_len == 0) {
 		free(buffer);
+		free(saved_part);
 		return;
 	} else {
 		memcpy(string, buffer, new_str_len + 1);
 		memcpy(string + new_str_len + 1, saved_part, length_of_remainingstring + 1);
 	}
 	free(buffer);
+	free(saved_part);
 }

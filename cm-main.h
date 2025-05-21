@@ -31,6 +31,7 @@
 #define MAX_BLOCK_SIZE 4096
 // #define MAX_BLOCKS 100
 #define MAX_LINE 1024
+#define DISPLAY_WIDTH 77
 #define MAX_INPUT 256
 // #define MAX_DISPLAY 20
 #define DEFAULT_FILE "out.txt"

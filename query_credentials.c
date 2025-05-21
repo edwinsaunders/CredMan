@@ -1,7 +1,7 @@
 #include "cm-main.h"
 
 #ifdef _WIN32
-void set_fixed_console_size(int rows, int cols) {
+void _set_fixed_console_size(int rows, int cols) {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     COORD size = {cols, rows};
     SMALL_RECT rect = {0, 0, cols - 1, rows - 1};
@@ -24,7 +24,19 @@ void set_fixed_console_size(int rows, int cols) {
 
 WINDOW *input_win, *results_win;
 
-void redraw_ui() {
+// Calculate lines occupied by a string, including wrapping
+int _calc_lines(const char *str) {
+    int len = strlen(str);
+    return (len + DISPLAY_WIDTH - 1) / DISPLAY_WIDTH;
+}
+
+// Print string and return next empty y-position
+int _print_line(WINDOW *win, int start_y, int x, const char *str) {
+    mvwprintw(win, start_y, x, "%s", str);
+    return start_y + _calc_lines(str);
+}
+
+void _redraw_ui() {
 
     endwin();
     refresh();
@@ -49,7 +61,7 @@ void redraw_ui() {
     doupdate();
 }
 
-size_t arr_length(char **arr) {
+size_t _arr_length(char **arr) {
     size_t length = 0;
     while (arr[length] != NULL) {
         length++;
@@ -68,9 +80,9 @@ void query_credentials(Credential *creds, int num_creds) {
     keypad(stdscr, TRUE);
 
 #ifdef _WIN32
-    const int FIXED_ROWS = 24;
+    const int FIXED_ROWS = 44;
     const int FIXED_COLS = 80;
-    set_fixed_console_size(FIXED_ROWS, FIXED_COLS);
+    _set_fixed_console_size(FIXED_ROWS, FIXED_COLS);
 #endif
 
     // Get screen dimensions
@@ -206,10 +218,19 @@ void query_credentials(Credential *creds, int num_creds) {
             // modified code
             content_copy = strdup(creds[matches[selected]].content);
             block_lines = string_split(content_copy);
-            num_lines = arr_length(block_lines);
+            num_lines = _arr_length(block_lines);
             mvwprintw(results_win, 1, 1, "Credentials for %s:", creds[matches[selected]].account);
+            
+            /* 
+            print first line
+            get how many whole multiples of DISPLAY_WIDTH its length is
+            get next empty y-value
+
+            */ 
+            int current_y = 4;
             for(int j = 0; j < num_lines; j++) {
-                mvwprintw(results_win, 3 + j, 1, "%s", block_lines[j]);                
+                current_y = _print_line(results_win, current_y, 1, block_lines[j]);
+                //mvwprintw(results_win, 3 + j, 1, "%s", block_lines[j]);
             }
             
             // free memory
@@ -244,7 +265,7 @@ void query_credentials(Credential *creds, int num_creds) {
             offset = 0;
             selected = 0;
         } else if (ch == KEY_RESIZE) {
-            redraw_ui(); // Handle resize immediately
+            _redraw_ui(); // Handle resize immediately
 
             //get new height of results window to know how many results to display
             results_max_y = getmaxy(results_win);
