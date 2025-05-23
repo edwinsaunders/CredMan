@@ -77,7 +77,14 @@ int main(int argc, char *argv[]) {
     // Initialize credential array
     int num_creds = 0;
     count_creds(filename, &num_creds);
+
+    //memory allocation
     Credential *creds = malloc(num_creds * sizeof(Credential));
+    for (int i = 0; i < num_creds; i++) {
+        creds[i].account = malloc(MAX_LINE);
+        creds[i].content = malloc(MAX_BLOCK_SIZE);
+    }
+
     if (!creds) {
         perror("error allocating memory");
         return 0;

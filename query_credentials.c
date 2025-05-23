@@ -22,7 +22,7 @@ void _set_fixed_console_size(int rows, int cols) {
 }
 #endif
 
-WINDOW *input_win, *results_win;
+WINDOW *input_win, *results_win, *bg_win;
 
 // Calculate lines occupied by a string, including wrapping
 int _calc_lines(const char *str) {
@@ -81,7 +81,7 @@ void query_credentials(Credential *creds, int num_creds) {
 
 #ifdef _WIN32
     const int FIXED_ROWS = 44;
-    const int FIXED_COLS = 80;
+    const int FIXED_COLS = 82;
     _set_fixed_console_size(FIXED_ROWS, FIXED_COLS);
 #endif
 
@@ -89,14 +89,21 @@ void query_credentials(Credential *creds, int num_creds) {
     // int max_y, max_x;
     // getmaxyx(stdscr, max_y, max_x);
 
-    // Create input and results windows
-    input_win = newwin(3, COLS, 0, 0);
+    // Create input and results windows and bg win for results
+    input_win = newwin(4, COLS, 0, 0);
     box(input_win, 0, 0);
     mvwprintw(input_win, 1, 1, "Search: ");
     wrefresh(input_win);
+    keypad(input_win, TRUE);
 
-    results_win = newwin(LINES - 3, COLS, 3, 0);
+    bg_win = newwin(LINES - 4, COLS, 4, 0);
+    box(bg_win, 0, 0);
+    wrefresh(bg_win);
+
+    results_win = newwin(LINES - 6, COLS - 2, 5, 1);
     wrefresh(results_win);
+    keypad(results_win, TRUE);
+
 
     //get height of results window to know how many results to display
     int results_max_y = getmaxy(results_win);
@@ -106,9 +113,10 @@ void query_credentials(Credential *creds, int num_creds) {
 
     // Buffers and variables for user interaction
     char input[MAX_INPUT] = "";
-    char **block_lines;
-    char *content_copy;
-    int num_lines = 0;
+    // char **block_lines;
+    // char *content_copy;
+    // int num_lines = 0;
+    char *content_copy2;
     int input_pos = 0;
     int selected = 0;
     int offset = 0;
@@ -127,6 +135,7 @@ void query_credentials(Credential *creds, int num_creds) {
         // setup input win
         box(input_win, 0, 0);
         mvwprintw(input_win, 1, 1, "Search: ");
+        wrefresh(input_win);
 
 
 
@@ -176,7 +185,6 @@ void query_credentials(Credential *creds, int num_creds) {
 
         // Display results
         werase(results_win);
-        box(results_win, 0, 0);
         for (int i = offset; i < num_matches && i < offset + num_results_to_display; i++) {
             if (i == selected) {
                 wattron(results_win, A_REVERSE);
@@ -194,7 +202,8 @@ void query_credentials(Credential *creds, int num_creds) {
         wrefresh(input_win);
 
         // Handle user input
-        int ch = getch();
+        int ch = wgetch(input_win);
+        // printf("keycode: %d", ch);
 
         /*
         resize handling
@@ -209,17 +218,18 @@ void query_credentials(Credential *creds, int num_creds) {
             break;
         } else if (ch == '\n' && num_matches > 0) {
             werase(results_win);
-            box(results_win, 0, 0);
 
             // original line
-            // mvwprintw(results_win, 1, 1, "Credentials for %s:\n%s",
-            //     creds[matches[selected]].account, creds[matches[selected]].content);
+            mvwprintw(results_win, 0, 0, "Credentials for %s:\n\n%s", 
+                creds[matches[selected]].account, creds[matches[selected]].content);
             
             // modified code
-            content_copy = strdup(creds[matches[selected]].content);
-            block_lines = string_split(content_copy);
-            num_lines = _arr_length(block_lines);
-            mvwprintw(results_win, 1, 1, "Credentials for %s:", creds[matches[selected]].account);
+            //content_copy gets new address of string
+            //content_copy = strdup(creds[matches[selected]].content);
+            //block_lines gets new address for array of strings
+            //block_lines = string_split(content_copy);
+            //num_lines = _arr_length(block_lines);
+            //mvwprintw(results_win, 1, 1, "Credentials for %s:", creds[matches[selected]].account);
             
             /* 
             print first line
@@ -227,25 +237,44 @@ void query_credentials(Credential *creds, int num_creds) {
             get next empty y-value
 
             */ 
-            int current_y = 4;
-            for(int j = 0; j < num_lines; j++) {
-                current_y = _print_line(results_win, current_y, 1, block_lines[j]);
-                //mvwprintw(results_win, 3 + j, 1, "%s", block_lines[j]);
-            }
+            // int current_y = 4;
+            // for(int j = 0; j < num_lines; j++) {
+            //     current_y = _print_line(results_win, current_y, 1, block_lines[j]);
+            //     //mvwprintw(results_win, 3 + j, 1, "%s", block_lines[j]);
+            // }
             
             // free memory
-            for(int i = 0; i < num_lines; i++) {
-                free(block_lines[i]);
-            }
-            free(block_lines);
-            free(content_copy);
+            //for(int i = 0; i < num_lines; i++) {
+            //    free(block_lines[i]);
+            //}
+            //free(block_lines);
+            //free(content_copy);
 
 
-
-            mvwprintw(results_win, LINES - 6, 1, "Press any key to continue...");
+            mvwprintw(results_win, LINES - 8, 1, "Press 'e' to edit");
+            mvwprintw(results_win, LINES - 7, 1, "Press any other key to continue...");
             wrefresh(results_win);
             // wait for key press
-            getch();
+            int ch = wgetch(results_win);
+            if (ch == 'e') {
+                // copy content buffer, gets new address for copy
+                content_copy2 = strdup(creds[matches[selected]].content);
+                //realloc to max size before editing
+                content_copy2 = realloc(content_copy2, MAX_BLOCK_SIZE);
+
+                // open edit window
+                edit_cred(content_copy2, creds[matches[selected]].content,
+                    creds[matches[selected]].account, creds, num_creds);
+                
+                werase(results_win);
+                refresh();
+                box(bg_win, 0, 0);
+                wrefresh(bg_win);
+                wrefresh(results_win);
+                
+                free(content_copy2);
+            }
+            
 
         // key codes needed to be modified for wine - KEY_UP, etc. did not work
         // 450 = KEY_UP, 456 = KEY_DOWN, 8 = KEY_BACKSPACE
@@ -253,7 +282,7 @@ void query_credentials(Credential *creds, int num_creds) {
             selected--;
         } else if (ch == KEY_DOWN && selected < num_matches - 1) {
             selected++;
-        } else if (ch == KEY_BACKSPACE || ch == 127) {
+        } else if (ch == KEY_BACKSPACE || ch == 8) {
             if (input_pos > 0) {
                 input[--input_pos] = '\0';
                 offset = 0;

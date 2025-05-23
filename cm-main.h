@@ -8,7 +8,7 @@
 #define strcasecmp _stricmp
 // #define KEY_UP 450
 // #define KEY_DOWN 456
-#define KEY_BACKSPACE 8
+// #define KEY_BACKSPACE 8
 // #include <string.h>
 #ifndef strdup
 #define strdup _strdup
@@ -56,6 +56,7 @@ void query_credentials(Credential *creds, int num_creds);
 void free_credentials(Credential *creds, int num_creds);
 char **string_split(char *string);
 void rename_cred(char *string);
+void edit_cred(char *tempbuffer, char* savebuffercontent, char* savebufferaccount, Credential *creds, int num_creds);
 
 
 #endif // CM_MAIN_H

@@ -12,6 +12,7 @@ int read_credentials(const char *filename, Credential *creds, int *num_creds) {
     // Buffers for reading and building credential blocks
     char buffer[MAX_LINE];
     char current_block[MAX_BLOCK_SIZE] = "";
+    char *temp;
     int block_size = 0;
     int empty_lines = 0;
     int cred_count = 0;
@@ -46,9 +47,17 @@ int read_credentials(const char *filename, Credential *creds, int *num_creds) {
             if (empty_lines >= 1 && block_size > 0) {
                 // Finalize current block
                 current_block[block_size] = '\0';
-                creds[cred_count].content = strdup(current_block);
-                creds[cred_count].account = extract_account(current_block);
+                //creds[cred_count].content = strdup(current_block);
+                memcpy(creds[cred_count].content, current_block, block_size + 1);
+                //creds[cred_count].account = extract_account(current_block);
+                temp = extract_account(current_block);
+                memcpy(creds[cred_count].account, temp, strlen(temp) + 1);
+                //free temp buffer
+                free(temp);
+                
                 cred_count++;
+
+
                 current_block[0] = '\0';
                 block_size = 0;
             }
@@ -64,8 +73,12 @@ int read_credentials(const char *filename, Credential *creds, int *num_creds) {
     // Handle any remaining block
     if (block_size > 0) {
         current_block[block_size] = '\0';
-        creds[cred_count].content = strdup(current_block);
-        creds[cred_count].account = extract_account(current_block);
+        //creds[cred_count].content = strdup(current_block);
+        memcpy(creds[cred_count].content, current_block, block_size + 1);
+        //creds[cred_count].account = extract_account(current_block);
+        temp = extract_account(current_block);
+        memcpy(creds[cred_count].account, temp, strlen(temp) + 1);
+        free(temp);
     }
 
     fclose(file);
