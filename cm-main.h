@@ -43,10 +43,7 @@ typedef struct {
 
 void trim(char *str);
 char *extract_account(const char *block);
-int are_blocks_equal(const char *block1, const char *block2);
-int same_account(const char *account1, const char *account2);
 int fuzzy_match(const char *pattern, const char *str);
-void print_cred_block(Credential *creds);
 void count_creds(const char *filename, int *num_creds);
 int read_credentials(const char *filename, Credential *creds, int *num_creds);
 void remove_duplicates(Credential *creds, int *num_creds);
@@ -54,7 +51,6 @@ void handle_same_accounts(Credential *creds, int *num_creds);
 void save_credentials(const char *filename, Credential *creds, int num_creds);
 void query_credentials(Credential *creds, int num_creds);
 void free_credentials(Credential *creds, int num_creds);
-char **string_split(char *string);
 void rename_cred(char *string);
 void edit_cred(char *tempbuffer, char* savebuffercontent, char* savebufferaccount, Credential *creds, int num_creds);
 

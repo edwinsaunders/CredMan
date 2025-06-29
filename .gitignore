@@ -30,3 +30,5 @@ archive/
 *.sublime-workspace
 
 *.sublime-project
+
+.vscode/

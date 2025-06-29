@@ -3,6 +3,9 @@
 // Releases memory for each credential's content and account strings,
 // then frees the array itself.
 void free_credentials(Credential *creds, int num_creds) {
+    if (creds == NULL) {
+        return; // Nothing to free
+    }
     for (int i = 0; i < num_creds; i++) {
         free(creds[i].content);
         free(creds[i].account);

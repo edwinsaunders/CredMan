@@ -7,7 +7,8 @@ void remove_duplicates(Credential *creds, int *num_creds) {
         if (creds[i].content == NULL) continue;
         for (int j = i + 1; j < *num_creds; j++) {
             if (creds[j].content == NULL) continue;
-            if (are_blocks_equal(creds[i].content, creds[j].content)) {
+            //strcmp returns 0 for equality
+            if (!strcmp(creds[i].content, creds[j].content)) {
                 // Free duplicate memory
                 free(creds[j].content);
                 free(creds[j].account);

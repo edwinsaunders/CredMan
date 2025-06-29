@@ -56,13 +56,7 @@ int main(int argc, char *argv[]) {
             print_usage(argv[0]);
             return 1;
         }
-    } 
-
-    // Example processing
-
-    // if (verbose) {
-    //     printf("Verbose mode enabled\n");
-    // }
+    }    
     
     if (filename) {
         printf("Input file: %s\n", filename);
@@ -74,27 +68,44 @@ int main(int argc, char *argv[]) {
     }
     //end of args handling
 
-    // Initialize credential array
+    // count credentials in file for memory allocation
     int num_creds = 0;
     count_creds(filename, &num_creds);
 
-    //memory allocation
+//memory allocation
     Credential *creds = malloc(num_creds * sizeof(Credential));
-    for (int i = 0; i < num_creds; i++) {
-        creds[i].account = malloc(MAX_LINE);
-        creds[i].content = malloc(MAX_BLOCK_SIZE);
-    }
-
     if (!creds) {
         perror("error allocating memory");
-        return 0;
-        
+        return 1;        
     }
+
+    // Initialize pointers to NULL for safety when calling free_credentials
+    for (int i = 0; i < num_creds; i++) {
+        creds[i].account = NULL;
+        creds[i].content = NULL;
+    }
+
+    for (int i = 0; i < num_creds; i++) {
+        creds[i].account = malloc(MAX_LINE);
+        if (!creds[i].account) {
+            perror("error allocating memory");
+            free_credentials(creds, num_creds);
+            return 1;        
+        }
+        creds[i].content = malloc(MAX_BLOCK_SIZE);
+        if (!creds[i].content) {
+            perror("error allocating memory");
+            free_credentials(creds, num_creds);
+            return 1;        
+        }
+    }
+
+    
     if (!read_credentials(filename, creds, &num_creds)) {
         return 1;
     }
     
-    // use args to control flow
+// use args to control program flow
     if(newfile == true) {           
             
         // Process credentials

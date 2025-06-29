@@ -13,10 +13,10 @@ void trim(char *str) {
     // initialize 'end' to point to last char in string
     char *end = start + strlen(start) - 1;
 
-    // decrement 'end' until it points to last non-space char
+    // decrement 'end' until it points to last non-whitespace char
     while (end > start && isspace((unsigned char)*end)) end--;
 
-    // put null-terminator after last non-space char
+    // put null-terminator after last non-whitespace char
     *(end + 1) = '\0';
 
     // move new string pointed to by 'start' to the start of the 'str' buffer

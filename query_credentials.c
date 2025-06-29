@@ -151,17 +151,7 @@ void query_credentials(Credential *creds, int num_creds) {
             }
         }
 
-        // sort matches by score using bubble sort
-        //scores[N]
-        // scores[matches[N]] goes with creds[N].account
-        // def bubble_sort(arr):
-        //     n = len(arr)
-        //     for i in range(n):
-        //         for j in range(0, n - i - 1):
-        //             if arr[j] > arr[j + 1]:
-        //                 arr[j], arr[j + 1] = arr[j + 1], arr[j]
-        //     return arr
-
+        // sort matches and match_scores simultaneously by score using bubble sort
         int n = num_matches;
         int temp;
         int temp2;
@@ -177,6 +167,7 @@ void query_credentials(Credential *creds, int num_creds) {
                 }
             }
         }
+
         // Adjust selection and scrolling
         if (selected >= num_matches) selected = num_matches - 1;
         if (selected < 0) selected = 0;
@@ -203,16 +194,6 @@ void query_credentials(Credential *creds, int num_creds) {
 
         // Handle user input
         int ch = wgetch(input_win);
-        // printf("keycode: %d", ch);
-
-        /*
-        resize handling
-
-        if resize detected, reinit curses with new window size
-        update affected values
-
-        */
-        
 
         if (ch == 27) {
             break;
@@ -223,37 +204,10 @@ void query_credentials(Credential *creds, int num_creds) {
             mvwprintw(results_win, 0, 0, "Credentials for %s:\n\n%s", 
                 creds[matches[selected]].account, creds[matches[selected]].content);
             
-            // modified code
-            //content_copy gets new address of string
-            //content_copy = strdup(creds[matches[selected]].content);
-            //block_lines gets new address for array of strings
-            //block_lines = string_split(content_copy);
-            //num_lines = _arr_length(block_lines);
-            //mvwprintw(results_win, 1, 1, "Credentials for %s:", creds[matches[selected]].account);
-            
-            /* 
-            print first line
-            get how many whole multiples of DISPLAY_WIDTH its length is
-            get next empty y-value
-
-            */ 
-            // int current_y = 4;
-            // for(int j = 0; j < num_lines; j++) {
-            //     current_y = _print_line(results_win, current_y, 1, block_lines[j]);
-            //     //mvwprintw(results_win, 3 + j, 1, "%s", block_lines[j]);
-            // }
-            
-            // free memory
-            //for(int i = 0; i < num_lines; i++) {
-            //    free(block_lines[i]);
-            //}
-            //free(block_lines);
-            //free(content_copy);
-
-
             mvwprintw(results_win, LINES - 8, 1, "Press 'e' to edit");
             mvwprintw(results_win, LINES - 7, 1, "Press any other key to continue...");
             wrefresh(results_win);
+            
             // wait for key press
             int ch = wgetch(results_win);
             if (ch == 'e') {
@@ -266,7 +220,7 @@ void query_credentials(Credential *creds, int num_creds) {
                 edit_cred(content_copy2, creds[matches[selected]].content,
                     creds[matches[selected]].account, creds, num_creds);
                 
-                werase(results_win);
+                erase();
                 refresh();
                 box(bg_win, 0, 0);
                 wrefresh(bg_win);

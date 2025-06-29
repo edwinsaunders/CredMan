@@ -8,7 +8,7 @@ void handle_same_accounts(Credential *creds, int *num_creds) {
         if (creds[i].content == NULL) continue;
         for (int j = i + 1; j < *num_creds; j++) {
             if (creds[j].content == NULL) continue;
-            if (same_account(creds[i].account, creds[j].account)) {
+            if (!strcasecmp(creds[i].account, creds[j].account)) {
                 // Display duplicate account entries
                 printf("\nMultiple entries found for account: %s\n", creds[i].account);
                 printf("\nEntry %d:\n%s\n", i + 1, creds[i].content);
